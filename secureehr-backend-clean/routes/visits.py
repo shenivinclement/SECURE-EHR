@@ -25,7 +25,12 @@ def create_visit(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    visit = HospitalVisit(**visit_data.model_dump())
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="No patient profile for this user")
+    data = visit_data.model_dump()
+    data["patient_id"] = patient.id
+    visit = HospitalVisit(**data)
     db.add(visit)
     db.commit()
     db.refresh(visit)
@@ -38,7 +43,12 @@ def get_visit(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    visit = db.query(HospitalVisit).filter(HospitalVisit.id == visit_id).first()
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Visit not found")
+    visit = db.query(HospitalVisit).filter(
+        HospitalVisit.id == visit_id, HospitalVisit.patient_id == patient.id
+    ).first()
     if not visit:
         raise HTTPException(status_code=404, detail="Visit not found")
     return visit
@@ -50,7 +60,12 @@ def delete_visit(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    visit = db.query(HospitalVisit).filter(HospitalVisit.id == visit_id).first()
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Visit not found")
+    visit = db.query(HospitalVisit).filter(
+        HospitalVisit.id == visit_id, HospitalVisit.patient_id == patient.id
+    ).first()
     if not visit:
         raise HTTPException(status_code=404, detail="Visit not found")
     db.delete(visit)

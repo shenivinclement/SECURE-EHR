@@ -1,0 +1,55 @@
+{
+  "base_url": "http://localhost:8000",
+  "discovered_via": ["GET /openapi.json (live)", "static route review: secureehr-backend-clean/routes/*.py"],
+  "excluded": ["GET /health"],
+  "endpoints": [
+    {"method": "GET",    "path": "/",                                   "expected_access": "public"},
+    {"method": "GET",    "path": "/docs",                                "expected_access": "public (Swagger UI exposed)"},
+    {"method": "GET",    "path": "/redoc",                               "expected_access": "public (ReDoc exposed)"},
+    {"method": "GET",    "path": "/openapi.json",                        "expected_access": "public (full API schema exposed)"},
+
+    {"method": "POST",   "path": "/auth/register",                       "expected_access": "public"},
+    {"method": "POST",   "path": "/auth/login",                          "expected_access": "public"},
+    {"method": "GET",    "path": "/auth/me",                             "expected_access": "auth (any role)"},
+    {"method": "PATCH",  "path": "/auth/me/two-factor",                  "expected_access": "auth (any role)"},
+
+    {"method": "GET",    "path": "/hospitals",                           "expected_access": "public"},
+    {"method": "POST",   "path": "/hospitals",                           "expected_access": "auth required in code, but no role check present - review whether patient role should be allowed"},
+    {"method": "PUT",    "path": "/hospitals/{hospital_id}",              "expected_access": "auth required in code, but no role check present"},
+    {"method": "DELETE", "path": "/hospitals/{hospital_id}",              "expected_access": "auth required in code, but no role check present (destructive, not executed live)"},
+
+    {"method": "GET",    "path": "/patients",                            "expected_access": "auth (any role) - review: returns ALL patients, not caller-scoped"},
+    {"method": "POST",   "path": "/patients",                            "expected_access": "auth (any role)"},
+    {"method": "GET",    "path": "/patients/me",                         "expected_access": "auth, self-scoped"},
+    {"method": "PUT",    "path": "/patients/me",                         "expected_access": "auth, self-scoped"},
+    {"method": "GET",    "path": "/patients/{patient_id}",                "expected_access": "auth - review: no ownership/consent check on patient_id"},
+    {"method": "PATCH",  "path": "/patients/me/research-sharing",        "expected_access": "auth, self-scoped"},
+
+    {"method": "GET",    "path": "/records",                             "expected_access": "auth, self-scoped (caller's own patient record)"},
+    {"method": "POST",   "path": "/records",                             "expected_access": "auth - review: no ownership check on patient_id in body"},
+    {"method": "GET",    "path": "/records/{record_id}",                  "expected_access": "auth - review: no ownership check on record_id"},
+
+    {"method": "POST",   "path": "/ai/chat",                             "expected_access": "auth (any role)"},
+
+    {"method": "GET",    "path": "/visits",                              "expected_access": "auth, self-scoped"},
+    {"method": "POST",   "path": "/visits",                              "expected_access": "auth - review: no ownership check on patient_id in body"},
+    {"method": "GET",    "path": "/visits/{visit_id}",                    "expected_access": "auth - review: no ownership check on visit_id"},
+    {"method": "DELETE", "path": "/visits/{visit_id}",                    "expected_access": "auth - review: no ownership check (destructive, not executed live)"},
+
+    {"method": "GET",    "path": "/consent",                             "expected_access": "auth, self-scoped"},
+    {"method": "POST",   "path": "/consent/grant",                       "expected_access": "auth, self-scoped"},
+    {"method": "POST",   "path": "/consent/revoke",                      "expected_access": "auth - review: no ownership check on consent_id"},
+    {"method": "DELETE", "path": "/consent/{consent_id}",                 "expected_access": "auth, self-scoped (ownership checked in code) (destructive, not executed live)"},
+
+    {"method": "GET",    "path": "/doctor/profile",                      "expected_access": "auth, role=doctor"},
+    {"method": "GET",    "path": "/doctor/dashboard",                    "expected_access": "auth, role=doctor"},
+    {"method": "GET",    "path": "/doctor/patients",                     "expected_access": "auth, role=doctor"},
+    {"method": "GET",    "path": "/doctor/patients/{patient_id}/records", "expected_access": "auth, role=doctor + active consent"},
+    {"method": "GET",    "path": "/doctor/patients/{patient_id}/visits",  "expected_access": "auth, role=doctor + active consent"},
+    {"method": "GET",    "path": "/doctor/search",                       "expected_access": "auth, role=doctor"},
+    {"method": "GET",    "path": "/doctor/consents",                     "expected_access": "auth, role=doctor"},
+
+    {"method": "POST",   "path": "/admin/reset",                         "expected_access": "static header key (X-Admin-Key), hardcoded in source - not executed live (fully destructive: wipes all data)"}
+  ],
+  "count": 36
+}

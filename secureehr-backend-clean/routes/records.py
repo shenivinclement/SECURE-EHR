@@ -25,7 +25,12 @@ def create_record(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    record = MedicalRecord(**record_data.model_dump())
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="No patient profile for this user")
+    data = record_data.model_dump()
+    data["patient_id"] = patient.id
+    record = MedicalRecord(**data)
     db.add(record)
     db.commit()
     db.refresh(record)
@@ -38,7 +43,12 @@ def get_record(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    record = db.query(MedicalRecord).filter(MedicalRecord.id == record_id).first()
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Medical record not found")
+    record = db.query(MedicalRecord).filter(
+        MedicalRecord.id == record_id, MedicalRecord.patient_id == patient.id
+    ).first()
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
     return record

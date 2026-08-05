@@ -1,5 +1,11 @@
+import os
+import secrets
+
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
+
+load_dotenv()
 
 from database import get_db
 from models.consent import Consent
@@ -11,7 +17,7 @@ from models.user import User
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-_ADMIN_KEY = "reset-secureehr-demo"
+_ADMIN_KEY = os.getenv("ADMIN_RESET_KEY")
 
 
 @router.post("/reset", status_code=200)
@@ -19,7 +25,13 @@ def reset_demo_data(
     x_admin_key: str = Header(...),
     db: Session = Depends(get_db),
 ):
-    if x_admin_key != _ADMIN_KEY:
+    # Wipes every table -- stays disabled unless an operator explicitly sets a key.
+    if not _ADMIN_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin reset is disabled. Set ADMIN_RESET_KEY to enable it.",
+        )
+    if not secrets.compare_digest(x_admin_key, _ADMIN_KEY):
         raise HTTPException(status_code=403, detail="Forbidden")
 
     deleted = {}

@@ -12,7 +12,8 @@ router = APIRouter(prefix="/patients", tags=["patients"])
 
 @router.get("", response_model=List[PatientResponse])
 def get_patients(db: Session = Depends(get_db), current_user=Depends(require_auth)):
-    return db.query(Patient).all()
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    return [patient] if patient else []
 
 
 @router.post("", response_model=PatientResponse, status_code=status.HTTP_201_CREATED)
@@ -42,7 +43,9 @@ def get_patient(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    patient = db.query(Patient).filter(
+        Patient.id == patient_id, Patient.user_id == current_user.id
+    ).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient

@@ -1,0 +1,135 @@
+name: SecureEHR Automated Test Reports
+
+# Publishes the Selenium web E2E, Appium mobile E2E, load/performance and
+# API security (DAST) reports. Results are rendered into the run summary
+# (visible in the Actions tab) and uploaded as downloadable artifacts.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-test-reports:
+    name: Render & publish test reports
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip openpyxl
+
+      - name: Verify report spreadsheets are present
+        run: |
+          echo "### Report files in this checkout" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          ls -lh \
+            E2E_Test_Report_SecureEHR.xlsx \
+            Appium_Mobile_E2E_Test_Report_SecureEHR.xlsx \
+            Load_Test_Report_SecureEHR.xlsx \
+            automated_test/SecureEHR_Vulnerability_Report.xlsx \
+            2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Render spreadsheets into the workflow summary
+        run: python .github/scripts/render_reports.py
+
+      - name: Upload all test report spreadsheets
+        uses: actions/upload-artifact@v4
+        with:
+          name: SecureEHR-Test-Reports-${{ github.run_number }}
+          path: |
+            E2E_Test_Report_SecureEHR.xlsx
+            Appium_Mobile_E2E_Test_Report_SecureEHR.xlsx
+            Load_Test_Report_SecureEHR.xlsx
+            automated_test/SecureEHR_Vulnerability_Report.xlsx
+            automated_test/report.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload web E2E report (Selenium)
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-selenium-report
+          path: E2E_Test_Report_SecureEHR.xlsx
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload mobile E2E report (Appium)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-e2e-appium-report
+          path: Appium_Mobile_E2E_Test_Report_SecureEHR.xlsx
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload load & performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-performance-report
+          path: Load_Test_Report_SecureEHR.xlsx
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload API security (DAST) report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-security-dast-report
+          path: |
+            automated_test/SecureEHR_Vulnerability_Report.xlsx
+            automated_test/report.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Gate the build on security findings
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from collections import Counter
+
+          if hasattr(sys.stdout, "reconfigure"):
+              sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+          with open("automated_test/report.json", encoding="utf-8") as fh:
+              results = json.load(fh)
+
+          findings = [r for r in results if r.get("finding")]
+          counts = Counter(r.get("severity") for r in findings)
+          blocking = counts.get("critical", 0) + counts.get("high", 0)
+
+          lines = [
+              "",
+              "## Security gate",
+              "",
+              f"- Test cases executed: **{len(results)}**",
+              f"- Findings: **{len(findings)}** "
+              f"(critical {counts.get('critical', 0)}, high {counts.get('high', 0)}, "
+              f"medium {counts.get('medium', 0)}, low {counts.get('low', 0)})",
+              "",
+          ]
+          if blocking:
+              lines.append(f"❌ **FAILED** — {blocking} critical/high finding(s) must be fixed.")
+          else:
+              lines.append("✅ **PASSED** — no critical or high severity findings.")
+          lines.append("")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write("\n".join(lines))
+
+          print("\n".join(lines))
+          sys.exit(1 if blocking else 0)
+          PY

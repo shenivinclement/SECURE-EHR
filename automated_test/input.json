@@ -1,0 +1,5 @@
+{
+  "baseUrl": "http://localhost:8000",
+  "_credentials": "Demo account emails and the shared demo password live in secureehr-backend-clean/reset_and_import_demo.py (local seed data only). The harness resolves them to JWTs at runtime via POST /auth/login.",
+  "_note": "No tokens or real secrets are stored in this file or written to disk by the harness. Never point this at a production host."
+}

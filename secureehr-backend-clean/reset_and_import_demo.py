@@ -34,15 +34,24 @@ patients AND doctors, so there is no separate script to remember to run.
 
 import csv
 import hashlib
+import os
 import requests
 import pandas as pd
 import time
 from datetime import datetime
 from collections import Counter, defaultdict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_URL = "http://localhost:8000"
 CSV_PATH = "healthcare_dataset.csv"
-ADMIN_KEY = "reset-secureehr-demo"
+ADMIN_KEY = os.getenv("ADMIN_RESET_KEY")
+if not ADMIN_KEY:
+    raise SystemExit(
+        "ADMIN_RESET_KEY is not set. Set the same value here and on the API "
+        "(see .env) before running the demo reset."
+    )
 
 PATIENTS = [
     {"name": "James Brown",      "email": "james.brown@secureehr.test",    "password": "Demo@1234", "primary_condition": "Diabetes"},

@@ -1,0 +1,6 @@
+# Runtime artifacts from a local DAST run -- regenerated on every execution.
+# report.json and SecureEHR_Vulnerability_Report.xlsx ARE committed on purpose:
+# the CI workflow renders and publishes them.
+*.log
+savepoint.json
+__pycache__/

@@ -74,7 +74,12 @@ def revoke_consent(
     db: Session = Depends(get_db),
     current_user=Depends(require_auth),
 ):
-    consent = db.query(Consent).filter(Consent.id == revoke_data.consent_id).first()
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="No patient profile for this user")
+    consent = db.query(Consent).filter(
+        Consent.id == revoke_data.consent_id, Consent.patient_id == patient.id
+    ).first()
     if not consent:
         raise HTTPException(status_code=404, detail="Consent record not found")
     if not consent.is_active:
