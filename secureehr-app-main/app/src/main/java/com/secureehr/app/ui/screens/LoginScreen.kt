@@ -18,10 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,20 +36,25 @@ import androidx.navigation.NavController
 import com.secureehr.app.R
 import com.secureehr.app.data.api.LoginRequest
 import com.secureehr.app.data.api.RetrofitClient
+import com.secureehr.app.data.local.SavedCredential
+import com.secureehr.app.data.local.SavedCredentialsManager
 import com.secureehr.app.data.local.TokenManager
 import com.secureehr.app.data.local.db.AppDatabase
+import com.secureehr.app.data.local.deriveDisplayName
 import com.secureehr.app.navigation.Screen
+import com.secureehr.app.ui.components.RoleBadge
 import com.secureehr.app.ui.theme.CyanAccent
 import com.secureehr.app.ui.theme.TealPrimary
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val tokenManager = remember { TokenManager(context) }
+    val credentialsManager = remember { SavedCredentialsManager(context) }
     val db = remember { AppDatabase.getDatabase(context) }
 
     var email by remember { mutableStateOf("") }
@@ -57,6 +65,10 @@ fun LoginScreen(navController: NavController) {
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var loginError by remember { mutableStateOf<String?>(null) }
+
+    var savedCredentials by remember { mutableStateOf<List<SavedCredential>>(emptyList()) }
+    var emailDropdownExpanded by remember { mutableStateOf(false) }
+    var emailFieldWidthPx by remember { mutableStateOf(0) }
 
     val errorEmailRequired = stringResource(R.string.error_email_required)
     val errorEmailInvalid = stringResource(R.string.error_email_invalid)
@@ -80,15 +92,7 @@ fun LoginScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         delay(100)
         logoVisible = true
-        // Auto-fill saved credentials
-        val saved = tokenManager.rememberMe.first()
-        rememberMe = saved
-        if (saved) {
-            val savedEmail = tokenManager.savedEmail.first()
-            val savedPwd = tokenManager.savedPassword.first()
-            if (!savedEmail.isNullOrBlank()) email = savedEmail
-            if (!savedPwd.isNullOrBlank()) password = savedPwd
-        }
+        savedCredentials = credentialsManager.getAll()
     }
 
     fun validate(): Boolean {
@@ -181,23 +185,94 @@ fun LoginScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Column {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it; emailError = null; loginError = null },
-                        label = { Text(stringResource(R.string.email_address)) },
-                        leadingIcon = { Icon(Icons.Default.Email, null, tint = TealPrimary) },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        isError = emailError != null,
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            focusedBorderColor = TealPrimary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { emailFieldWidthPx = it.size.width }
+                    ) {
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it; emailError = null; loginError = null },
+                            label = { Text(stringResource(R.string.email_address)) },
+                            leadingIcon = { Icon(Icons.Default.Email, null, tint = TealPrimary) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused && savedCredentials.isNotEmpty()) {
+                                        emailDropdownExpanded = true
+                                    }
+                                },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            isError = emailError != null,
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedBorderColor = TealPrimary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            )
                         )
-                    )
+
+                        DropdownMenu(
+                            expanded = emailDropdownExpanded && savedCredentials.isNotEmpty(),
+                            onDismissRequest = { emailDropdownExpanded = false },
+                            modifier = Modifier
+                                .width(with(LocalDensity.current) { emailFieldWidthPx.toDp() })
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            savedCredentials.forEach { credential ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(Modifier.weight(1f)) {
+                                                Text(
+                                                    credential.displayName,
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                                Text(
+                                                    credential.email,
+                                                    fontSize = 11.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            Spacer(Modifier.width(8.dp))
+                                            RoleBadge(credential.role)
+                                        }
+                                    },
+                                    onClick = {
+                                        email = credential.email
+                                        password = credential.password
+                                        emailError = null
+                                        passwordError = null
+                                        loginError = null
+                                        emailDropdownExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        IconButton(
+                                            onClick = {
+                                                credentialsManager.delete(credential.email)
+                                                savedCredentials = credentialsManager.getAll()
+                                            },
+                                            modifier = Modifier.size(28.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
                     if (emailError != null)
                         Text(emailError!!, color = MaterialTheme.colorScheme.error, fontSize = 11.sp, modifier = Modifier.padding(start = 8.dp, top = 3.dp))
                 }
@@ -289,13 +364,16 @@ fun LoginScreen(navController: NavController) {
                                     db.medicalRecordDao().deleteAll()
                                     db.consentAuditDao().deleteAll()
                                     tokenManager.saveToken(response.access_token)
-                                    if (rememberMe) tokenManager.saveCredentials(email, password)
-                                    else tokenManager.clearCredentials()
                                     val profile = try {
                                         RetrofitClient.apiService.getMyProfile("Bearer ${response.access_token}")
                                     } catch (_: Exception) { null }
                                     val role = profile?.role ?: "patient"
                                     tokenManager.saveUserRole(role)
+                                    if (rememberMe) {
+                                        val displayName = profile?.name?.takeIf { it.isNotBlank() }
+                                            ?: deriveDisplayName(email)
+                                        credentialsManager.upsert(email, password, displayName, role)
+                                    }
                                     val destination = if (role == "doctor") Screen.DoctorDashboard.route else Screen.Dashboard.route
                                     navController.navigate(destination) {
                                         popUpTo(Screen.Login.route) { inclusive = true }

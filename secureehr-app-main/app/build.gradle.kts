@@ -76,6 +76,9 @@ dependencies {
     
     // Biometric
     implementation("androidx.biometric:biometric:1.1.0")
+
+    // Encrypted storage for saved login credentials
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     
     // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")

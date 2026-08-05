@@ -11,9 +11,6 @@ val Context.dataStore by preferencesDataStore(name = "user_prefs")
 class TokenManager(private val context: Context) {
     companion object {
         private val TOKEN_KEY = stringPreferencesKey("jwt_token")
-        private val SAVED_EMAIL_KEY = stringPreferencesKey("saved_email")
-        private val SAVED_PASSWORD_KEY = stringPreferencesKey("saved_password")
-        private val REMEMBER_ME_KEY = booleanPreferencesKey("remember_me")
         private val BIOMETRIC_ENABLED_KEY = booleanPreferencesKey("biometric_enabled")
         private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
         private val LANGUAGE_KEY = stringPreferencesKey("language")
@@ -29,9 +26,6 @@ class TokenManager(private val context: Context) {
     }
 
     val token: Flow<String?> = context.dataStore.data.map { it[TOKEN_KEY] }
-    val savedEmail: Flow<String?> = context.dataStore.data.map { it[SAVED_EMAIL_KEY] }
-    val savedPassword: Flow<String?> = context.dataStore.data.map { it[SAVED_PASSWORD_KEY] }
-    val rememberMe: Flow<Boolean> = context.dataStore.data.map { it[REMEMBER_ME_KEY] ?: false }
     val biometricEnabled: Flow<Boolean> = context.dataStore.data.map { it[BIOMETRIC_ENABLED_KEY] ?: false }
     val darkMode: Flow<Boolean> = context.dataStore.data.map { it[DARK_MODE_KEY] ?: true }
     val language: Flow<String> = context.dataStore.data.map { it[LANGUAGE_KEY] ?: "English" }
@@ -59,22 +53,6 @@ class TokenManager(private val context: Context) {
 
     suspend fun clearUserRole() {
         context.dataStore.edit { it.remove(USER_ROLE_KEY) }
-    }
-
-    suspend fun saveCredentials(email: String, password: String) {
-        context.dataStore.edit {
-            it[SAVED_EMAIL_KEY] = email
-            it[SAVED_PASSWORD_KEY] = password
-            it[REMEMBER_ME_KEY] = true
-        }
-    }
-
-    suspend fun clearCredentials() {
-        context.dataStore.edit {
-            it.remove(SAVED_EMAIL_KEY)
-            it.remove(SAVED_PASSWORD_KEY)
-            it[REMEMBER_ME_KEY] = false
-        }
     }
 
     suspend fun setBiometricEnabled(enabled: Boolean) {

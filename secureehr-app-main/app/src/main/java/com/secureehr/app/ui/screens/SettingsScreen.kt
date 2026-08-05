@@ -23,9 +23,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -56,9 +58,12 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.secureehr.app.R
 import com.secureehr.app.data.api.ChangePasswordRequest
 import com.secureehr.app.data.api.RetrofitClient
+import com.secureehr.app.data.local.SavedCredential
+import com.secureehr.app.data.local.SavedCredentialsManager
 import com.secureehr.app.data.local.TokenManager
 import com.secureehr.app.data.local.db.AppDatabase
 import com.secureehr.app.navigation.Screen
+import com.secureehr.app.ui.components.RoleBadge
 import com.secureehr.app.ui.theme.TealPrimary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -76,12 +81,14 @@ fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val tokenManager = remember { TokenManager(context) }
+    val credentialsManager = remember { SavedCredentialsManager(context) }
     val db = remember { AppDatabase.getDatabase(context) }
 
     var darkModeEnabled by remember { mutableStateOf(true) }
     var biometricEnabled by remember { mutableStateOf(false) }
     var faceIdEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("Hindi") }
+    var savedAccounts by remember { mutableStateOf<List<SavedCredential>>(emptyList()) }
 
     var showChangePassword by remember { mutableStateOf(false) }
     var showTerms by remember { mutableStateOf(false) }
@@ -89,6 +96,7 @@ fun SettingsScreen(navController: NavController) {
     var showVersion by remember { mutableStateOf(false) }
     var showLanguageMenu by remember { mutableStateOf(false) }
     var showFaceIdDialog by remember { mutableStateOf(false) }
+    var showManageAccounts by remember { mutableStateOf(false) }
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -105,6 +113,9 @@ fun SettingsScreen(navController: NavController) {
     }
     LaunchedEffect(Unit) {
         tokenManager.language.collect { selectedLanguage = it }
+    }
+    LaunchedEffect(Unit) {
+        savedAccounts = credentialsManager.getAll()
     }
 
     val languages = listOf("English", "Hindi")
@@ -224,6 +235,15 @@ fun SettingsScreen(navController: NavController) {
                     if (faceIdEnabled) stringResource(R.string.face_id_enabled_subtitle) else stringResource(R.string.face_id_setup_subtitle)
                 ) {
                     showFaceIdDialog = true
+                }
+
+                // Manage Saved Accounts
+                SettingsInfoRow(
+                    "Manage Saved Accounts",
+                    if (savedAccounts.isEmpty()) "No saved accounts" else "${savedAccounts.size} saved"
+                ) {
+                    savedAccounts = credentialsManager.getAll()
+                    showManageAccounts = true
                 }
 
                 // NFC
@@ -380,6 +400,101 @@ fun SettingsScreen(navController: NavController) {
             },
             onDismiss = { showFaceIdDialog = false }
         )
+    }
+
+    if (showManageAccounts) {
+        ManageSavedAccountsDialog(
+            accounts = savedAccounts,
+            onDelete = { email ->
+                credentialsManager.delete(email)
+                savedAccounts = credentialsManager.getAll()
+            },
+            onClearAll = {
+                credentialsManager.clearAll()
+                savedAccounts = emptyList()
+            },
+            onDismiss = { showManageAccounts = false }
+        )
+    }
+}
+
+@Composable
+fun ManageSavedAccountsDialog(
+    accounts: List<SavedCredential>,
+    onDelete: (String) -> Unit,
+    onClearAll: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(modifier = Modifier.padding(20.dp).fillMaxWidth()) {
+                Text(
+                    "Saved Accounts",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(12.dp))
+
+                if (accounts.isEmpty()) {
+                    Text(
+                        "No saved accounts yet. Check \"Remember Me\" at login to save one.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .heightIn(max = 320.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        accounts.forEach { account ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        account.displayName,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(account.email, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                RoleBadge(account.role)
+                                Spacer(Modifier.width(8.dp))
+                                IconButton(onClick = { onDelete(account.email) }, modifier = Modifier.size(28.dp)) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(onClick = onClearAll) {
+                        Text("Clear All", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Done") }
+                }
+            }
+        }
     }
 }
 
