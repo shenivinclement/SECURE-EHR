@@ -1,8 +1,6 @@
 package com.secureehr.app.ui.screens
 
 import android.widget.Toast
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -32,8 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.secureehr.app.data.api.MedicalRecord
@@ -80,53 +76,19 @@ private val placeholderRecords = listOf(
 @Composable
 fun RecordsScreen(navController: NavController) {
     val context         = LocalContext.current
-    val activity        = context as FragmentActivity
     val scope           = rememberCoroutineScope()
     val tokenManager    = remember { TokenManager(context) }
     val db              = remember { AppDatabase.getDatabase(context) }
     val blockchainVm: BlockchainViewModel = viewModel()
 
-    var isAuthenticated by remember { mutableStateOf(false) }
-    var authChecked     by remember { mutableStateOf(false) }
     var isLoading       by remember { mutableStateOf(false) }
     var showAddDialog   by remember { mutableStateOf(false) }
 
     val dbRecords  by db.medicalRecordDao().observeAll().collectAsState(initial = emptyList())
     val chainState by blockchainVm.state.collectAsState()
 
-    // Biometric gate
+    // Sync with backend (fingerprint gate, if enabled, is enforced by BiometricGate in AppNavigation)
     LaunchedEffect(Unit) {
-        val biometricEnabled = tokenManager.biometricEnabled.first()
-        if (!biometricEnabled) { isAuthenticated = true; authChecked = true; return@LaunchedEffect }
-        val canAuth = BiometricManager.from(context)
-            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-        if (canAuth != BiometricManager.BIOMETRIC_SUCCESS) {
-            isAuthenticated = true; authChecked = true; return@LaunchedEffect
-        }
-        val executor = ContextCompat.getMainExecutor(context)
-        BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                isAuthenticated = true; authChecked = true
-            }
-            override fun onAuthenticationFailed() {}
-            override fun onAuthenticationError(code: Int, msg: CharSequence) {
-                if (code == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
-                    code == BiometricPrompt.ERROR_USER_CANCELED
-                ) navController.popBackStack()
-                else { isAuthenticated = true; authChecked = true }
-            }
-        }).authenticate(
-            BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Verify Identity")
-                .setSubtitle("Biometric required to view Medical Records")
-                .setNegativeButtonText("Cancel")
-                .build()
-        )
-    }
-
-    // Sync with backend after auth
-    LaunchedEffect(isAuthenticated) {
-        if (!isAuthenticated) return@LaunchedEffect
         isLoading = true
         try {
             val token = tokenManager.token.first()
@@ -142,13 +104,6 @@ fun RecordsScreen(navController: NavController) {
         } finally {
             isLoading = false
         }
-    }
-
-    if (!authChecked && !isAuthenticated) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = TealPrimary)
-        }
-        return
     }
 
     Scaffold(
