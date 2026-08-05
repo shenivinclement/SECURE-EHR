@@ -1,5 +1,6 @@
 package com.secureehr.app.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,6 +54,9 @@ fun DoctorSearchScreen(navController: NavController) {
         try {
             val token = tokenManager.token.first() ?: return@LaunchedEffect
             results = RetrofitClient.apiService.searchPatients("Bearer $token", query)
+            results.forEach { result ->
+                Log.d("DoctorSearch", "Result: $result, hasConsent=${result.hasConsent}")
+            }
         } catch (_: Exception) {
             results = emptyList()
         } finally {

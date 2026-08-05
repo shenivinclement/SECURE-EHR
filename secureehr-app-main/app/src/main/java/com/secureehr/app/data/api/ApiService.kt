@@ -249,10 +249,10 @@ data class DoctorPatient(
 )
 
 data class PatientSearchResult(
-    val id: Int? = null,
+    @SerializedName("patient_id") val id: Int? = null,
     val name: String? = null,
     val gender: String? = null,
-    @SerializedName("has_consent") val hasConsent: Boolean? = null
+    @SerializedName("has_active_consent") val hasConsent: Boolean? = null
 )
 
 data class DoctorConsentView(
