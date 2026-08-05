@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Hindi translations for SecureEHR.
+    The app currently uses hardcoded Kotlin strings in Compose UI. To activate
+    these translations, replace hardcoded strings with stringResource(R.string.xxx) calls.
+-->
+<resources>
+    <string name="app_name">SecureEHR</string>
+    <string name="nav_dashboard">डैशबोर्ड</string>
+    <string name="nav_medical_records">चिकित्सा रिकॉर्ड</string>
+    <string name="nav_visits">मेरी यात्राएं</string>
+    <string name="nav_hospital_finder">अस्पताल खोजक</string>
+    <string name="nav_consent">सहमति प्रबंधक</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_profile">मेरी प्रोफ़ाइल</string>
+    <string name="health_wallet">स्वास्थ्य वॉलेट</string>
+    <string name="insurance_provider">बीमा प्रदाता</string>
+    <string name="policy_number">पॉलिसी नंबर</string>
+    <string name="coverage_amount">कवरेज राशि</string>
+    <string name="expiry_date">समाप्ति तिथि</string>
+    <string name="add_document">दस्तावेज़ जोड़ें</string>
+    <string name="add_insurance_card">बीमा कार्ड जोड़ें</string>
+    <string name="save_changes">परिवर्तन सहेजें</string>
+    <string name="dark_mode">डार्क मोड</string>
+    <string name="language">भाषा</string>
+    <string name="logout">लॉग आउट</string>
+    <string name="personal_information">व्यक्तिगत जानकारी</string>
+    <string name="privacy_security">गोपनीयता और सुरक्षा</string>
+    <string name="help_support">सहायता और समर्थन</string>
+    <string name="change_password">पासवर्ड बदलें</string>
+    <string name="fingerprint_auth">फिंगरप्रिंट प्रमाणीकरण</string>
+    <string name="ai_chat">AI चैट</string>
+    <string name="blockchain_status">ब्लॉकचेन स्थिति</string>
+
+    <!-- Login -->
+    <string name="login_tagline">आपका स्वास्थ्य, सुरक्षित।</string>
+    <string name="email_address">ईमेल पता</string>
+    <string name="password">पासवर्ड</string>
+    <string name="remember_me">मुझे याद रखें</string>
+    <string name="sign_in">साइन इन करें</string>
+    <string name="no_account_prompt">खाता नहीं है? </string>
+    <string name="register">पंजीकरण करें</string>
+    <string name="error_email_required">ईमेल आवश्यक है</string>
+    <string name="error_email_invalid">मान्य ईमेल दर्ज करें</string>
+    <string name="error_password_required">पासवर्ड आवश्यक है</string>
+    <string name="error_password_min_length">न्यूनतम 6 अक्षर</string>
+    <string name="error_invalid_credentials">अमान्य ईमेल या पासवर्ड</string>
+
+    <!-- Dashboard -->
+    <string name="good_day">शुभ दिन,</string>
+    <string name="loading_ellipsis">लोड हो रहा है…</string>
+    <string name="default_user">उपयोगकर्ता</string>
+    <string name="records_label">रिकॉर्ड</string>
+    <string name="visits_label">यात्राएं</string>
+    <string name="consents_label">सहमतियां</string>
+    <string name="home_label">होम</string>
+    <string name="history_label">इतिहास</string>
+    <string name="my_patients_label">मेरे मरीज़</string>
+    <string name="search_patients_label">मरीज़ खोजें</string>
+
+    <!-- Settings -->
+    <string name="section_general">सामान्य</string>
+    <string name="section_security">सुरक्षा और बायोमेट्रिक्स</string>
+    <string name="section_account">खाता</string>
+    <string name="section_about">जानकारी</string>
+    <string name="current_password_label">वर्तमान पासवर्ड</string>
+    <string name="new_password_label">नया पासवर्ड</string>
+    <string name="confirm_new_password_label">नए पासवर्ड की पुष्टि करें</string>
+    <string name="password_changed_success">पासवर्ड सफलतापूर्वक बदल दिया गया!</string>
+    <string name="error_passwords_mismatch">पासवर्ड मेल नहीं खाते</string>
+    <string name="error_change_password_failed">विफल। अपना वर्तमान पासवर्ड जांचें।</string>
+    <string name="update_password">पासवर्ड अपडेट करें</string>
+    <string name="face_id_auth">फेस आईडी प्रमाणीकरण</string>
+    <string name="face_id_enabled_subtitle">सक्षम — फिर से नामांकन के लिए टैप करें</string>
+    <string name="face_id_setup_subtitle">चेहरा पहचान सेट करने के लिए टैप करें</string>
+    <string name="nfc_card_reader">NFC कार्ड रीडर</string>
+    <string name="nfc_setup_subtitle">सेटअप निर्देश देखने के लिए टैप करें</string>
+    <string name="nfc_instructions_toast">अपने डिवाइस के पिछले हिस्से के पास NFC हेल्थ कार्ड रखें।</string>
+    <string name="export_health_records">स्वास्थ्य रिकॉर्ड निर्यात करें</string>
+    <string name="export_health_records_subtitle">सभी रिकॉर्ड को JSON के रूप में डाउनलोड में सहेजें</string>
+    <string name="share_health_records_chooser">स्वास्थ्य रिकॉर्ड साझा करें</string>
+    <string name="exported_to_toast">यहां निर्यात किया गया: %1$s</string>
+    <string name="export_failed_toast">निर्यात विफल: %1$s</string>
+    <string name="terms_of_service">सेवा की शर्तें</string>
+    <string name="terms_of_service_body">SecureEHR का उपयोग करके, आप हमारी सेवा की शर्तों से सहमत होते हैं। यह एप्लिकेशन आपके स्वास्थ्य अनुभव को बेहतर बनाने के लिए ही स्वास्थ्य डेटा एकत्र और संसाधित करता है। सभी डेटा HIPAA और GDPR के अनुपालन में संग्रहीत किया जाता है। आपको किसी भी समय अपने डेटा तक पहुंचने, संशोधित करने और हटाने का अधिकार है।</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="privacy_policy_body">SecureEHR पूरी तरह से HIPAA-अनुपालक है। आपका स्वास्थ्य डेटा AES-256 का उपयोग करके स्टोरेज और ट्रांज़िट में एन्क्रिप्ट किया जाता है। हम सख्त एक्सेस नियंत्रण और ऑडिट लॉगिंग लागू करते हैं। स्पष्ट सहमति के बिना डेटा कभी साझा नहीं किया जाता। डेटा निर्यात या हटाने का अनुरोध करने के लिए privacy@secureehr.com पर संपर्क करें।</string>
+    <string name="version_info">संस्करण जानकारी</string>
+    <string name="version_label">संस्करण</string>
+    <string name="build_date_label">बिल्ड तिथि</string>
+    <string name="build_date_value">मई 2026</string>
+    <string name="min_sdk_label">न्यूनतम SDK</string>
+    <string name="version_changelog_v1">• v1.0.0 – मेडिकल रिकॉर्ड्स, हॉस्पिटल फाइंडर, AI चैट, कंसेंट मैनेजर, हेल्थ वॉलेट के साथ प्रारंभिक रिलीज़</string>
+    <string name="face_id_setup_success_toast">फेस आईडी सफलतापूर्वक सेट हो गई!</string>
+    <string name="camera_permission_denied">कैमरा अनुमति अस्वीकृत। कृपया सेटिंग्स में सक्षम करें।</string>
+    <string name="set_up_face_id_title">फेस आईडी सेट करें</string>
+    <string name="face_id_position_instruction">अपने चेहरे को वृत्त में रखें</string>
+    <string name="camera_unavailable">कैमरा अनुपलब्ध: %1$s</string>
+    <string name="face_recognised">चेहरा पहचाना गया!</string>
+    <string name="looking_for_face">आपका चेहरा खोजा जा रहा है…</string>
+    <string name="awaiting_camera_permission">कैमरा अनुमति की प्रतीक्षा में</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="language_set_to">भाषा %1$s पर सेट की गई</string>
+</resources>
