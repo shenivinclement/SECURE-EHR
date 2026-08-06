@@ -38,9 +38,14 @@ export default function Login() {
     try {
       if (isRegister) {
         await register(name, email, password, 'patient');
-        setSuccess('Account created! Signing you in…');
+        setMode('login');
+        setName('');
+        setPassword('');
+        setConfirmPassword('');
+        setSuccess('Account created — please sign in.');
+      } else {
+        await finishLogin();
       }
-      await finishLogin();
     } catch (err) {
       setError(
         err?.response?.data?.detail ||
