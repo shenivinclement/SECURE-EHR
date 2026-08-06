@@ -57,15 +57,6 @@ export default function Login() {
     setSuccess('');
   };
 
-  const fillDemo = (role) => {
-    if (role === 'patient') {
-      setEmail('robert.smith@secureehr.test');
-    } else {
-      setEmail('dr.david.lyons@secureehr.test');
-    }
-    setPassword('Demo@1234');
-  };
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -263,48 +254,6 @@ export default function Login() {
             >
               {isRegister ? 'Sign in' : 'Register'}
             </button>
-          </p>
-        </div>
-
-        {/* Demo credentials */}
-        <div style={{
-          marginTop: '24px',
-          background: '#1A1F2E',
-          border: '1px solid #1E2435',
-          borderRadius: '12px',
-          padding: '20px 24px',
-        }}>
-          <p style={{ color: '#94A3B8', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px' }}>
-            Demo Credentials — click to fill
-          </p>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={() => fillDemo('patient')}
-              style={{
-                flex: 1, background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.3)',
-                color: '#14B8A6', padding: '10px', borderRadius: '8px', cursor: 'pointer',
-                fontSize: '13px', fontWeight: 600, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(20,184,166,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(20,184,166,0.1)'}
-            >
-              Patient Login
-            </button>
-            <button
-              onClick={() => fillDemo('doctor')}
-              style={{
-                flex: 1, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)',
-                color: '#818CF8', padding: '10px', borderRadius: '8px', cursor: 'pointer',
-                fontSize: '13px', fontWeight: 600, transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.1)'}
-            >
-              Doctor Login
-            </button>
-          </div>
-          <p style={{ color: '#4B5563', fontSize: '12px', margin: '10px 0 0', textAlign: 'center' }}>
-            Password: Demo@1234
           </p>
         </div>
       </div>
