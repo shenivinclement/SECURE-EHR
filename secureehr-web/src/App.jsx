@@ -9,6 +9,8 @@ import PatientDetail from './pages/PatientDetail';
 import HospitalFinder from './pages/HospitalFinder';
 import Visits from './pages/Visits';
 import DoctorPatients from './pages/DoctorPatients';
+import DoctorSearchPatients from './pages/DoctorSearchPatients';
+import DoctorConsents from './pages/DoctorConsents';
 import AiChat from './pages/AiChat';
 import Profile from './pages/Profile';
 
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="/hospitals" element={<HospitalFinder />} />
           <Route path="/visits" element={<Visits />} />
           <Route path="/doctor/patients" element={<DoctorPatients />} />
+          <Route path="/doctor/search" element={<DoctorSearchPatients />} />
+          <Route path="/doctor/consents" element={<DoctorConsents />} />
           <Route path="/chat" element={<AiChat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />

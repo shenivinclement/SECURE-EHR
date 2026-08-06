@@ -114,6 +114,18 @@ export default function DoctorDashboard() {
                 onClick={() => navigate('/doctor/patients')}
               />
               <NavCard
+                label="Search Patients"
+                description="Find any registered patient by name and check your access status."
+                icon="🔍"
+                onClick={() => navigate('/doctor/search')}
+              />
+              <NavCard
+                label="Consent Manager"
+                description="See which patients have granted or revoked your access, and the terms."
+                icon="🛡️"
+                onClick={() => navigate('/doctor/consents')}
+              />
+              <NavCard
                 label="AI Chat"
                 description="Ask the AI assistant about patient data, diagnoses, and clinical decisions."
                 icon="🤖"

@@ -36,3 +36,8 @@ export const getPatients = () => client.get('/doctor/patients');
 
 export const getPatientRecords = (id) =>
   client.get(`/doctor/patients/${id}/records`);
+
+export const searchPatients = (q) =>
+  client.get('/doctor/search', { params: { q } });
+
+export const getDoctorConsents = () => client.get('/doctor/consents');
