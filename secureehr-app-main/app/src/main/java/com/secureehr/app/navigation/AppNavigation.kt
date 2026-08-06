@@ -15,7 +15,16 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Splash.route) { SplashScreen(navController) }
-        composable(Screen.Login.route) { LoginScreen(navController) }
+        composable(
+            route = Screen.Login.ROUTE_PATTERN,
+            arguments = listOf(navArgument("email") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            LoginScreen(navController, backStackEntry.arguments?.getString("email"))
+        }
         composable(Screen.Register.route) { RegisterScreen(navController) }
         composable(Screen.Dashboard.route) { DashboardScreen(navController) }
         composable(Screen.Records.route) {

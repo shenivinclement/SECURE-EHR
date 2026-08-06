@@ -2,7 +2,11 @@ package com.secureehr.app.navigation
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
-    object Login : Screen("login")
+    object Login : Screen("login") {
+        const val ROUTE_PATTERN = "login?email={email}"
+        fun routeWithEmail(email: String): String =
+            "login?email=${java.net.URLEncoder.encode(email, "UTF-8")}"
+    }
     object Register : Screen("register")
     object Dashboard : Screen("dashboard")
     object Records : Screen("records")

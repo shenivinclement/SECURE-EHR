@@ -50,14 +50,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, prefillEmail: String? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val tokenManager = remember { TokenManager(context) }
     val credentialsManager = remember { SavedCredentialsManager(context) }
     val db = remember { AppDatabase.getDatabase(context) }
 
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(prefillEmail ?: "") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }

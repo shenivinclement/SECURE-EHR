@@ -214,7 +214,7 @@ fun RegisterScreen(navController: NavController) {
                                         RegisterRequest(fullName, email, password, role)
                                     )
                                     Toast.makeText(context, "Registration successful! Please login.", Toast.LENGTH_LONG).show()
-                                    navController.navigate(Screen.Login.route) {
+                                    navController.navigate(Screen.Login.routeWithEmail(email)) {
                                         popUpTo(Screen.Register.route) { inclusive = true }
                                     }
                                 } catch (e: HttpException) {
